@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Fake GK</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand-mark">GK</div>
+      <h1>Fake GK</h1>
+    </header>
+
+    <main class="shell">
+      <form class="composer" action="/notes" method="post">
+        <input name="title" type="text" placeholder="Title" maxlength="255" aria-label="Note title">
+        <textarea name="body" rows="3" placeholder="Take a note..." aria-label="Note body"></textarea>
+        <div class="composer-actions">
+          <select name="color" aria-label="Note color">
+            <% colors.forEach((color) => { %>
+              <option value="<%= color %>"><%= color %></option>
+            <% }) %>
+          </select>
+          <button type="submit">Add note</button>
+        </div>
+      </form>
+
+      <section class="section">
+        <div class="section-heading">
+          <h2>Notes</h2>
+          <span><%= notes.length %></span>
+        </div>
+        <% if (notes.length === 0) { %>
+          <p class="empty">No notes yet.</p>
+        <% } %>
+        <div class="grid">
+          <% notes.forEach((note) => { %>
+            <%- include("partials/note-card", { note, colors }) %>
+          <% }) %>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-heading">
+          <h2>Archive</h2>
+          <span><%= archivedNotes.length %></span>
+        </div>
+        <% if (archivedNotes.length === 0) { %>
+          <p class="empty">Archived notes will land here.</p>
+        <% } %>
+        <div class="grid">
+          <% archivedNotes.forEach((note) => { %>
+            <%- include("partials/note-card", { note, colors }) %>
+          <% }) %>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

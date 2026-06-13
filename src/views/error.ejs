@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Fake GK Error</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <main class="shell">
+      <section class="error-panel">
+        <h1><%= message %></h1>
+        <% if (detail) { %>
+          <pre><%= detail %></pre>
+        <% } %>
+        <a href="/">Back to notes</a>
+      </section>
+    </main>
+  </body>
+</html>
