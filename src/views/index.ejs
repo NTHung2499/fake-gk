@@ -16,93 +16,126 @@
     </script>
   </head>
   <body>
-    <header class="topbar">
-      <div class="brand">
-        <div class="brand-mark">GK</div>
-        <div>
-          <h1>Fake GK</h1>
-          <p>Your note board</p>
+    <% const pinnedNotes = notes.filter((note) => note.is_pinned); %>
+    <% const otherNotes = notes.filter((note) => !note.is_pinned); %>
+    <header class="appbar">
+      <div class="appbar-left">
+        <button class="icon-button appbar-icon" type="button" aria-label="Main menu" title="Main menu">
+          <span aria-hidden="true">&#9776;</span>
+        </button>
+        <div class="brand">
+          <div class="brand-mark">K</div>
+          <h1>Keep</h1>
         </div>
       </div>
-      <div class="topbar-actions">
-        <div class="topbar-counts" aria-label="Board counts">
-          <span><strong><%= notes.length %></strong> active</span>
-          <span><strong><%= archivedNotes.length %></strong> archived</span>
-        </div>
-        <button class="theme-toggle" type="button" data-theme-toggle aria-label="Toggle dark mode" title="Toggle dark mode" aria-pressed="false">
-          <span data-theme-icon>Moon</span>
+      <label class="search-shell" aria-label="Search notes">
+        <span class="search-icon" aria-hidden="true">&#128269;</span>
+        <input type="search" placeholder="Search" aria-label="Search">
+      </label>
+      <div class="appbar-right">
+        <button class="icon-button appbar-icon" type="button" aria-label="Refresh" title="Refresh">
+          <span aria-hidden="true">&#8635;</span>
         </button>
+        <button class="icon-button appbar-icon" type="button" aria-label="List view" title="List view">
+          <span aria-hidden="true">&#9783;</span>
+        </button>
+        <button class="icon-button appbar-icon" type="button" data-theme-toggle aria-label="Toggle dark mode" title="Toggle dark mode" aria-pressed="false">
+          <span data-theme-icon aria-hidden="true">&#9789;</span>
+        </button>
+        <button class="icon-button appbar-icon" type="button" aria-label="Settings" title="Settings">
+          <span aria-hidden="true">&#9881;</span>
+        </button>
+        <div class="avatar" title="Profile">GK</div>
       </div>
     </header>
 
-    <main class="shell">
-      <section class="board-hero">
-        <div>
-          <p class="eyebrow">Personal board</p>
-          <h2>Capture ideas before they wander off.</h2>
-        </div>
-      </section>
+    <div class="layout-shell">
+      <aside class="left-rail" aria-label="Primary navigation">
+        <button class="rail-item rail-item-active" type="button">
+          <span aria-hidden="true">&#128221;</span>
+          <span>Notes</span>
+        </button>
+        <button class="rail-item" type="button">
+          <span aria-hidden="true">&#128230;</span>
+          <span>Archive</span>
+        </button>
+      </aside>
 
-      <form class="composer" action="/notes" method="post">
+      <main class="main-content">
+      <form class="composer" action="/notes" method="post" data-composer data-composer-open="false">
+        <div class="composer-collapsed">Take a note...</div>
         <div class="composer-fields">
-          <input name="title" type="text" placeholder="Title" maxlength="255" aria-label="Note title">
+          <input name="title" type="text" placeholder="Title" maxlength="255" aria-label="Note title" data-composer-title>
           <textarea name="body" rows="3" placeholder="Take a note..." aria-label="Note body"></textarea>
         </div>
         <div class="composer-actions">
-          <label>
-            <span>Color</span>
-            <select name="color" aria-label="Note color">
+          <div class="composer-actions-left">
+            <button class="icon-button appbar-icon" type="button" aria-label="Checklist" title="Checklist">
+              <span aria-hidden="true">&#9744;</span>
+            </button>
+            <button class="icon-button appbar-icon" type="button" aria-label="Brush" title="Brush">
+              <span aria-hidden="true">&#9998;</span>
+            </button>
+            <button class="icon-button appbar-icon" type="button" aria-label="Image" title="Image">
+              <span aria-hidden="true">&#128247;</span>
+            </button>
+            <label class="composer-color">
+              <span>Color</span>
+              <select name="color" aria-label="Note color">
               <% colors.forEach((color) => { %>
                 <option value="<%= color %>"><%= color %></option>
               <% }) %>
             </select>
-          </label>
-          <button class="primary-button" type="submit">Add note</button>
+            </label>
+          </div>
+          <div class="composer-actions-right">
+            <button class="ghost-button" type="button" data-composer-close>Close</button>
+            <button class="primary-button" type="submit">Add note</button>
+          </div>
         </div>
       </form>
 
       <section class="section">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">Workspace</p>
-            <h2>Notes</h2>
-          </div>
-          <span class="count-pill"><%= notes.length %></span>
-        </div>
-        <% if (notes.length === 0) { %>
-          <div class="empty">
-            <strong>No notes yet</strong>
-            <span>The board is clear.</span>
-          </div>
-        <% } %>
-        <div class="grid">
-          <% notes.forEach((note) => { %>
+        <h2 class="section-title">PINNED</h2>
+        <% if (pinnedNotes.length === 0) { %>
+          <p class="section-empty">No pinned notes.</p>
+        <% } else { %>
+          <div class="note-grid">
+          <% pinnedNotes.forEach((note) => { %>
             <%- include("partials/note-card", { note, colors }) %>
           <% }) %>
-        </div>
+          </div>
+        <% } %>
       </section>
 
       <section class="section">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">Saved away</p>
-            <h2>Archive</h2>
-          </div>
-          <span class="count-pill"><%= archivedNotes.length %></span>
-        </div>
-        <% if (archivedNotes.length === 0) { %>
-          <div class="empty">
-            <strong>Archive is quiet</strong>
-            <span>No archived notes.</span>
+        <h2 class="section-title">OTHERS</h2>
+        <% if (otherNotes.length === 0) { %>
+          <p class="section-empty">No notes.</p>
+        <% } else { %>
+          <div class="note-grid">
+          <% otherNotes.forEach((note) => { %>
+            <%- include("partials/note-card", { note, colors }) %>
+          <% }) %>
           </div>
         <% } %>
-        <div class="grid">
+      </section>
+
+      <section class="section section-archive">
+        <h2 class="section-title">ARCHIVE</h2>
+        <% if (archivedNotes.length === 0) { %>
+          <p class="section-empty">No archived notes.</p>
+        <% } else { %>
+          <div class="note-grid">
           <% archivedNotes.forEach((note) => { %>
             <%- include("partials/note-card", { note, colors }) %>
           <% }) %>
-        </div>
+          </div>
+        <% } %>
       </section>
-    </main>
+      </main>
+    </div>
     <script src="/theme.js" defer></script>
+    <script src="/ui.js" defer></script>
   </body>
 </html>

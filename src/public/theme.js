@@ -10,7 +10,7 @@
       toggle.setAttribute("aria-pressed", String(theme === "dark"));
     }
     if (icon) {
-      icon.textContent = theme === "dark" ? "Sun" : "Moon";
+      icon.textContent = theme === "dark" ? "☀" : "☾";
     }
   }
 
