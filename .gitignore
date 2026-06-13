@@ -5,5 +5,5 @@ npm-debug.log*
 .gocache/
 .gomodcache/
 bin/
-fake-gk
-fake-gk.exe
+/fake-gk
+/fake-gk.exe
