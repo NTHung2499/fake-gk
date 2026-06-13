@@ -11,7 +11,7 @@
   --accent-strong: #f7b801;
   --danger: #c5221f;
   --shadow-soft: 0 1px 2px rgba(60, 64, 67, 0.3), 0 1px 3px 1px rgba(60, 64, 67, 0.15);
-  --shadow-float: 0 2px 6px rgba(60, 64, 67, 0.25);
+  --shadow-float: 0 2px 8px rgba(60, 64, 67, 0.22), 0 1px 2px rgba(60, 64, 67, 0.18);
 }
 
 :root[data-theme="dark"] {
@@ -135,14 +135,37 @@ p {
 .icon-button {
   display: grid;
   place-items: center;
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
+  color: var(--muted);
+  transition: background 140ms ease, color 140ms ease, opacity 140ms ease;
 }
 
 .appbar-icon:hover,
 .icon-button:hover {
   background: var(--hover);
+  color: var(--text);
+}
+
+.ui-icon {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 auto;
+}
+
+.theme-icon {
+  display: grid;
+  place-items: center;
+}
+
+.theme-icon-sun,
+:root[data-theme="dark"] .theme-icon-moon {
+  display: none;
+}
+
+:root[data-theme="dark"] .theme-icon-sun {
+  display: grid;
 }
 
 .search-shell {
@@ -152,15 +175,18 @@ p {
   padding: 0 16px;
   border-radius: 8px;
   background: var(--surface-2);
+  color: var(--muted);
+  transition: background 140ms ease, box-shadow 140ms ease;
 }
 
 .search-shell input {
   width: 100%;
 }
 
-.search-icon {
-  font-size: 16px;
-  color: var(--muted);
+.search-shell:focus-within {
+  background: var(--surface);
+  box-shadow: var(--shadow-soft);
+  color: var(--text);
 }
 
 .avatar {
@@ -230,7 +256,7 @@ p {
 .composer {
   width: min(600px, calc(100% - 24px));
   margin: 16px auto 24px;
-  padding: 10px 14px;
+  padding: 11px 14px;
   border: 1px solid var(--border);
   border-radius: 8px;
   background: var(--surface);
@@ -239,6 +265,8 @@ p {
 
 .composer-collapsed {
   color: var(--muted);
+  min-height: 24px;
+  line-height: 24px;
 }
 
 .composer-fields,
@@ -295,17 +323,20 @@ p {
 }
 
 select {
-  min-width: 110px;
-  padding: 6px 8px;
+  min-width: 96px;
+  min-height: 32px;
+  padding: 5px 28px 5px 10px;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 86%, transparent);
+  color: var(--muted);
 }
 
 .primary-button,
 .save-button,
 .ghost-button {
   min-height: 34px;
-  padding: 0 12px;
+  padding: 0 14px;
   border-radius: 6px;
 }
 
@@ -335,7 +366,7 @@ select {
   color: var(--muted);
   font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.08em;
+  letter-spacing: 0;
 }
 
 .section-empty {
@@ -353,16 +384,18 @@ select {
   display: inline-block;
   width: 100%;
   margin: 0 0 14px;
-  padding: 12px 12px 8px;
-  border: 1px solid rgba(95, 99, 104, 0.4);
-  border-radius: 12px;
+  padding: 10px 12px 8px;
+  border: 1px solid color-mix(in srgb, var(--border) 82%, transparent);
+  border-radius: 8px;
   background: var(--surface);
   break-inside: avoid;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+  box-shadow: none;
+  transition: border-color 140ms ease, box-shadow 140ms ease, transform 140ms ease;
 }
 
 .note:hover,
 .note[data-expanded="true"] {
+  border-color: color-mix(in srgb, var(--border) 68%, var(--text));
   box-shadow: var(--shadow-float);
 }
 
@@ -374,6 +407,7 @@ select {
 
 .note-pin {
   opacity: 0;
+  margin: -4px -4px 0 0;
 }
 
 .note:hover .note-pin,
@@ -431,6 +465,8 @@ select {
   justify-content: space-between;
   margin-top: 8px;
   opacity: 0;
+  min-height: 36px;
+  transition: opacity 140ms ease;
 }
 
 .note:hover .note-actions,

@@ -21,7 +21,7 @@
     <header class="appbar">
       <div class="appbar-left">
         <button class="icon-button appbar-icon" type="button" aria-label="Main menu" title="Main menu">
-          <span aria-hidden="true">&#9776;</span>
+          <%- include("partials/icon", { icon: "menu" }) %>
         </button>
         <div class="brand">
           <div class="brand-mark">K</div>
@@ -29,21 +29,22 @@
         </div>
       </div>
       <label class="search-shell" aria-label="Search notes">
-        <span class="search-icon" aria-hidden="true">&#128269;</span>
+        <%- include("partials/icon", { icon: "search" }) %>
         <input type="search" placeholder="Search" aria-label="Search">
       </label>
       <div class="appbar-right">
         <button class="icon-button appbar-icon" type="button" aria-label="Refresh" title="Refresh">
-          <span aria-hidden="true">&#8635;</span>
+          <%- include("partials/icon", { icon: "refresh" }) %>
         </button>
         <button class="icon-button appbar-icon" type="button" aria-label="List view" title="List view">
-          <span aria-hidden="true">&#9783;</span>
+          <%- include("partials/icon", { icon: "grid" }) %>
         </button>
         <button class="icon-button appbar-icon" type="button" data-theme-toggle aria-label="Toggle dark mode" title="Toggle dark mode" aria-pressed="false">
-          <span data-theme-icon aria-hidden="true">&#9789;</span>
+          <span class="theme-icon theme-icon-moon" data-theme-icon="moon"><%- include("partials/icon", { icon: "moon" }) %></span>
+          <span class="theme-icon theme-icon-sun" data-theme-icon="sun"><%- include("partials/icon", { icon: "sun" }) %></span>
         </button>
         <button class="icon-button appbar-icon" type="button" aria-label="Settings" title="Settings">
-          <span aria-hidden="true">&#9881;</span>
+          <%- include("partials/icon", { icon: "settings" }) %>
         </button>
         <div class="avatar" title="Profile">GK</div>
       </div>
@@ -52,11 +53,11 @@
     <div class="layout-shell">
       <aside class="left-rail" aria-label="Primary navigation">
         <button class="rail-item rail-item-active" type="button">
-          <span aria-hidden="true">&#128221;</span>
+          <%- include("partials/icon", { icon: "note" }) %>
           <span>Notes</span>
         </button>
         <button class="rail-item" type="button">
-          <span aria-hidden="true">&#128230;</span>
+          <%- include("partials/icon", { icon: "archive" }) %>
           <span>Archive</span>
         </button>
       </aside>
@@ -71,16 +72,15 @@
         <div class="composer-actions">
           <div class="composer-actions-left">
             <button class="icon-button appbar-icon" type="button" aria-label="Checklist" title="Checklist">
-              <span aria-hidden="true">&#9744;</span>
+              <%- include("partials/icon", { icon: "check-square" }) %>
             </button>
-            <button class="icon-button appbar-icon" type="button" aria-label="Brush" title="Brush">
-              <span aria-hidden="true">&#9998;</span>
+            <button class="icon-button appbar-icon" type="button" aria-label="Color palette" title="Color palette">
+              <%- include("partials/icon", { icon: "palette" }) %>
             </button>
             <button class="icon-button appbar-icon" type="button" aria-label="Image" title="Image">
-              <span aria-hidden="true">&#128247;</span>
+              <%- include("partials/icon", { icon: "image" }) %>
             </button>
             <label class="composer-color">
-              <span>Color</span>
               <select name="color" aria-label="Note color">
               <% colors.forEach((color) => { %>
                 <option value="<%= color %>"><%= color %></option>

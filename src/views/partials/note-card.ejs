@@ -2,7 +2,7 @@
   <form action="/notes/<%= note.id %>/pin" method="post" class="note-pin-form">
     <% if (!note.is_archived) { %>
       <button class="icon-button note-pin" type="submit" title="<%= note.is_pinned ? "Unpin note" : "Pin note" %>" aria-label="<%= note.is_pinned ? "Unpin note" : "Pin note" %>">
-        <span aria-hidden="true"><%= note.is_pinned ? "📌" : "📍" %></span>
+        <%- include("icon", { icon: note.is_pinned ? "pin-off" : "pin" }) %>
       </button>
     <% } %>
   </form>
@@ -24,7 +24,6 @@
     <textarea name="body" rows="5" placeholder="Take a note" aria-label="Edit body"><%= note.body %></textarea>
     <div class="note-footer">
       <label class="note-color">
-        <span>Color</span>
         <select name="color" aria-label="Change color">
           <% colors.forEach((color) => { %>
             <option value="<%= color %>" <%= color === note.color ? "selected" : "" %>><%= color %></option>
@@ -41,12 +40,12 @@
   <div class="note-actions">
     <form action="/notes/<%= note.id %>/archive" method="post">
       <button class="icon-button" type="submit" title="<%= note.is_archived ? "Restore note" : "Archive note" %>" aria-label="<%= note.is_archived ? "Restore note" : "Archive note" %>">
-        <span aria-hidden="true"><%= note.is_archived ? "↩" : "🗄" %></span>
+        <%- include("icon", { icon: note.is_archived ? "restore" : "archive" }) %>
       </button>
     </form>
     <form action="/notes/<%= note.id %>/delete" method="post">
       <button type="submit" class="icon-button danger" title="Delete note" aria-label="Delete note">
-        <span aria-hidden="true">🗑</span>
+        <%- include("icon", { icon: "trash" }) %>
       </button>
     </form>
   </div>

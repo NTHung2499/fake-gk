@@ -2,15 +2,11 @@
   const storageKey = "fake-gk-theme";
   const root = document.documentElement;
   const toggle = document.querySelector("[data-theme-toggle]");
-  const icon = document.querySelector("[data-theme-icon]");
 
   function applyTheme(theme) {
     root.dataset.theme = theme;
     if (toggle) {
       toggle.setAttribute("aria-pressed", String(theme === "dark"));
-    }
-    if (icon) {
-      icon.textContent = theme === "dark" ? "☀" : "☾";
     }
   }
 
