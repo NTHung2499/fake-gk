@@ -1,28 +1,40 @@
 <article class="note note-<%= note.color %>">
+  <div class="note-status">
+    <% if (note.is_pinned) { %>
+      <span class="status-chip">Pinned</span>
+    <% } %>
+    <% if (note.is_archived) { %>
+      <span class="status-chip">Archived</span>
+    <% } %>
+  </div>
+
   <form action="/notes/<%= note.id %>" method="post" class="note-form">
-    <input name="title" value="<%= note.title %>" maxlength="255" aria-label="Edit title">
-    <textarea name="body" rows="5" aria-label="Edit body"><%= note.body %></textarea>
+    <input name="title" value="<%= note.title %>" maxlength="255" placeholder="Untitled" aria-label="Edit title">
+    <textarea name="body" rows="5" placeholder="Empty note" aria-label="Edit body"><%= note.body %></textarea>
     <div class="note-footer">
-      <select name="color" aria-label="Change color">
-        <% colors.forEach((color) => { %>
-          <option value="<%= color %>" <%= color === note.color ? "selected" : "" %>><%= color %></option>
-        <% }) %>
-      </select>
-      <button type="submit">Save</button>
+      <label>
+        <span>Color</span>
+        <select name="color" aria-label="Change color">
+          <% colors.forEach((color) => { %>
+            <option value="<%= color %>" <%= color === note.color ? "selected" : "" %>><%= color %></option>
+          <% }) %>
+        </select>
+      </label>
+      <button class="save-button" type="submit">Save</button>
     </div>
   </form>
 
   <div class="note-actions">
     <% if (!note.is_archived) { %>
       <form action="/notes/<%= note.id %>/pin" method="post">
-        <button type="submit"><%= note.is_pinned ? "Unpin" : "Pin" %></button>
+        <button class="icon-button" type="submit" title="<%= note.is_pinned ? "Unpin note" : "Pin note" %>" aria-label="<%= note.is_pinned ? "Unpin note" : "Pin note" %>"><%= note.is_pinned ? "Unpin" : "Pin" %></button>
       </form>
     <% } %>
     <form action="/notes/<%= note.id %>/archive" method="post">
-      <button type="submit"><%= note.is_archived ? "Restore" : "Archive" %></button>
+      <button class="icon-button" type="submit" title="<%= note.is_archived ? "Restore note" : "Archive note" %>" aria-label="<%= note.is_archived ? "Restore note" : "Archive note" %>"><%= note.is_archived ? "Restore" : "Archive" %></button>
     </form>
     <form action="/notes/<%= note.id %>/delete" method="post">
-      <button type="submit" class="danger">Delete</button>
+      <button type="submit" class="icon-button danger" title="Delete note" aria-label="Delete note">Delete</button>
     </form>
   </div>
 </article>

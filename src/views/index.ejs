@@ -1,38 +1,77 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="light">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Fake GK</title>
     <link rel="stylesheet" href="/styles.css">
+    <script>
+      (() => {
+        const saved = localStorage.getItem("fake-gk-theme");
+        const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+        document.documentElement.dataset.theme = saved || (systemDark ? "dark" : "light");
+      })();
+    </script>
   </head>
   <body>
     <header class="topbar">
-      <div class="brand-mark">GK</div>
-      <h1>Fake GK</h1>
+      <div class="brand">
+        <div class="brand-mark">GK</div>
+        <div>
+          <h1>Fake GK</h1>
+          <p>Your note board</p>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <div class="topbar-counts" aria-label="Board counts">
+          <span><strong><%= notes.length %></strong> active</span>
+          <span><strong><%= archivedNotes.length %></strong> archived</span>
+        </div>
+        <button class="theme-toggle" type="button" data-theme-toggle aria-label="Toggle dark mode" title="Toggle dark mode" aria-pressed="false">
+          <span data-theme-icon>Moon</span>
+        </button>
+      </div>
     </header>
 
     <main class="shell">
+      <section class="board-hero">
+        <div>
+          <p class="eyebrow">Personal board</p>
+          <h2>Capture ideas before they wander off.</h2>
+        </div>
+      </section>
+
       <form class="composer" action="/notes" method="post">
-        <input name="title" type="text" placeholder="Title" maxlength="255" aria-label="Note title">
-        <textarea name="body" rows="3" placeholder="Take a note..." aria-label="Note body"></textarea>
+        <div class="composer-fields">
+          <input name="title" type="text" placeholder="Title" maxlength="255" aria-label="Note title">
+          <textarea name="body" rows="3" placeholder="Take a note..." aria-label="Note body"></textarea>
+        </div>
         <div class="composer-actions">
-          <select name="color" aria-label="Note color">
-            <% colors.forEach((color) => { %>
-              <option value="<%= color %>"><%= color %></option>
-            <% }) %>
-          </select>
-          <button type="submit">Add note</button>
+          <label>
+            <span>Color</span>
+            <select name="color" aria-label="Note color">
+              <% colors.forEach((color) => { %>
+                <option value="<%= color %>"><%= color %></option>
+              <% }) %>
+            </select>
+          </label>
+          <button class="primary-button" type="submit">Add note</button>
         </div>
       </form>
 
       <section class="section">
         <div class="section-heading">
-          <h2>Notes</h2>
-          <span><%= notes.length %></span>
+          <div>
+            <p class="eyebrow">Workspace</p>
+            <h2>Notes</h2>
+          </div>
+          <span class="count-pill"><%= notes.length %></span>
         </div>
         <% if (notes.length === 0) { %>
-          <p class="empty">No notes yet.</p>
+          <div class="empty">
+            <strong>No notes yet</strong>
+            <span>The board is clear.</span>
+          </div>
         <% } %>
         <div class="grid">
           <% notes.forEach((note) => { %>
@@ -43,11 +82,17 @@
 
       <section class="section">
         <div class="section-heading">
-          <h2>Archive</h2>
-          <span><%= archivedNotes.length %></span>
+          <div>
+            <p class="eyebrow">Saved away</p>
+            <h2>Archive</h2>
+          </div>
+          <span class="count-pill"><%= archivedNotes.length %></span>
         </div>
         <% if (archivedNotes.length === 0) { %>
-          <p class="empty">Archived notes will land here.</p>
+          <div class="empty">
+            <strong>Archive is quiet</strong>
+            <span>No archived notes.</span>
+          </div>
         <% } %>
         <div class="grid">
           <% archivedNotes.forEach((note) => { %>
@@ -56,5 +101,6 @@
         </div>
       </section>
     </main>
+    <script src="/theme.js" defer></script>
   </body>
 </html>
