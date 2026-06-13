@@ -2,12 +2,15 @@
   const composer = document.querySelector("[data-composer]");
   const composerTitle = document.querySelector("[data-composer-title]");
   const composerClose = document.querySelector("[data-composer-close]");
+  const searchInput = document.querySelector("[data-note-search]");
   const noteCards = Array.from(document.querySelectorAll("[data-note-card]"));
+  const noteSections = Array.from(document.querySelectorAll("[data-note-section]"));
 
   function setComposerOpen(isOpen) {
     if (!composer) {
       return;
     }
+
     composer.dataset.composerOpen = String(isOpen);
     if (isOpen && composerTitle) {
       composerTitle.focus();
@@ -20,6 +23,39 @@
         card.dataset.expanded = "false";
       }
     });
+  }
+
+  function refreshSectionVisibility(query) {
+    noteSections.forEach((section) => {
+      const cards = Array.from(section.querySelectorAll("[data-note-card]"));
+      const visibleCards = cards.filter((card) => !card.hidden);
+      const empty = section.querySelector("[data-section-empty]");
+      const count = section.querySelector(".section-header > span");
+
+      if (count) {
+        count.textContent = String(query ? visibleCards.length : cards.length);
+      }
+
+      if (empty) {
+        empty.hidden = visibleCards.length > 0;
+        empty.textContent = query ? "No matching notes here." : empty.dataset.defaultText;
+      }
+    });
+  }
+
+  function filterNotes() {
+    const query = (searchInput ? searchInput.value : "").trim().toLowerCase();
+
+    noteCards.forEach((card) => {
+      const searchableText = card.textContent.toLowerCase();
+      const matches = !query || searchableText.includes(query);
+      card.hidden = !matches;
+      if (!matches) {
+        card.dataset.expanded = "false";
+      }
+    });
+
+    refreshSectionVisibility(query);
   }
 
   if (composer) {
@@ -36,6 +72,13 @@
       });
     }
   }
+
+  noteSections.forEach((section) => {
+    const empty = section.querySelector("[data-section-empty]");
+    if (empty) {
+      empty.dataset.defaultText = empty.textContent;
+    }
+  });
 
   noteCards.forEach((card) => {
     const preview = card.querySelector("[data-note-preview]");
@@ -60,6 +103,10 @@
     }
   });
 
+  if (searchInput) {
+    searchInput.addEventListener("input", filterNotes);
+  }
+
   document.addEventListener("click", (event) => {
     if (composer && composer.dataset.composerOpen === "true" && !composer.contains(event.target)) {
       setComposerOpen(false);
@@ -79,6 +126,11 @@
 
     if (composer && composer.dataset.composerOpen === "true") {
       setComposerOpen(false);
+    }
+
+    if (searchInput && searchInput.value) {
+      searchInput.value = "";
+      filterNotes();
     }
 
     closeAllNotes();

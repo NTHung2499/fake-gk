@@ -23,7 +23,7 @@
     <input name="title" value="<%= note.title %>" maxlength="255" placeholder="Title" aria-label="Edit title">
     <textarea name="body" rows="5" placeholder="Take a note" aria-label="Edit body"><%= note.body %></textarea>
     <div class="note-footer">
-      <label class="note-color">
+      <label class="color-control note-color">
         <select name="color" aria-label="Change color">
           <% colors.forEach((color) => { %>
             <option value="<%= color %>" <%= color === note.color ? "selected" : "" %>><%= color %></option>
@@ -38,6 +38,7 @@
   </form>
 
   <div class="note-actions">
+    <span class="note-state"><%= note.is_archived ? "Archived" : (note.is_pinned ? "Pinned" : "Active") %></span>
     <form action="/notes/<%= note.id %>/archive" method="post">
       <button class="icon-button" type="submit" title="<%= note.is_archived ? "Restore note" : "Archive note" %>" aria-label="<%= note.is_archived ? "Restore note" : "Archive note" %>">
         <%- include("icon", { icon: note.is_archived ? "restore" : "archive" }) %>
