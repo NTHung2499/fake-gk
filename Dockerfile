@@ -1,14 +1,25 @@
-FROM node:22-alpine
+FROM golang:1.22-alpine AS build
 
-ENV NODE_ENV=production
+WORKDIR /src
+
+COPY go.mod go.sum ./
+RUN go mod download
+
+COPY . .
+RUN CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /out/fake-gk ./cmd/fake-gk
+
+FROM alpine:3.20
+
+RUN addgroup -S app && adduser -S app -G app
+
+ENV GIN_MODE=release
 WORKDIR /app
 
-COPY package*.json ./
-RUN if [ -f package-lock.json ]; then npm ci --omit=dev; else npm install --omit=dev; fi
+COPY --from=build /out/fake-gk ./fake-gk
+COPY src/public ./src/public
+COPY web/templates ./web/templates
 
-COPY src ./src
-
-USER node
+USER app
 EXPOSE 3000
 
-CMD ["node", "src/server.js"]
+CMD ["./fake-gk"]

@@ -1,3 +1,4 @@
+{{define "index.html"}}
 <!doctype html>
 <html lang="en" data-theme="light">
   <head>
@@ -16,10 +17,6 @@
     </script>
   </head>
   <body>
-    <% const pinnedNotes = notes.filter((note) => note.is_pinned); %>
-    <% const recentNotes = notes.filter((note) => !note.is_pinned); %>
-    <% const totalNotes = notes.length + archivedNotes.length; %>
-
     <header class="workspace-header">
       <div class="brand-lockup">
         <div class="brand-mark">N</div>
@@ -30,17 +27,17 @@
       </div>
 
       <label class="search-shell" aria-label="Search notes">
-        <%- include("partials/icon", { icon: "search" }) %>
+        {{template "icon" "search"}}
         <input type="search" placeholder="Search notes" aria-label="Search notes" data-note-search>
       </label>
 
       <div class="header-actions">
         <button class="icon-button" type="button" aria-label="Refresh" title="Refresh">
-          <%- include("partials/icon", { icon: "refresh" }) %>
+          {{template "icon" "refresh"}}
         </button>
         <button class="icon-button" type="button" data-theme-toggle aria-label="Toggle dark mode" title="Toggle dark mode" aria-pressed="false">
-          <span class="theme-icon theme-icon-moon" data-theme-icon="moon"><%- include("partials/icon", { icon: "moon" }) %></span>
-          <span class="theme-icon theme-icon-sun" data-theme-icon="sun"><%- include("partials/icon", { icon: "sun" }) %></span>
+          <span class="theme-icon theme-icon-moon" data-theme-icon="moon">{{template "icon" "moon"}}</span>
+          <span class="theme-icon theme-icon-sun" data-theme-icon="sun">{{template "icon" "sun"}}</span>
         </button>
         <div class="avatar" title="Profile">GK</div>
       </div>
@@ -49,14 +46,14 @@
     <div class="workspace-shell">
       <aside class="workspace-nav" aria-label="Workspace navigation">
         <button class="nav-item is-active" type="button">
-          <span class="nav-icon"><%- include("partials/icon", { icon: "note" }) %></span>
+          <span class="nav-icon">{{template "icon" "note"}}</span>
           <span>Notes</span>
-          <strong><%= notes.length %></strong>
+          <strong>{{len .Notes}}</strong>
         </button>
         <button class="nav-item" type="button">
-          <span class="nav-icon"><%- include("partials/icon", { icon: "archive" }) %></span>
+          <span class="nav-icon">{{template "icon" "archive"}}</span>
           <span>Archived</span>
-          <strong><%= archivedNotes.length %></strong>
+          <strong>{{len .ArchivedNotes}}</strong>
         </button>
       </aside>
 
@@ -76,19 +73,19 @@
             <div class="composer-actions">
               <div class="composer-tools">
                 <button class="icon-button" type="button" aria-label="Checklist" title="Checklist">
-                  <%- include("partials/icon", { icon: "check-square" }) %>
+                  {{template "icon" "check-square"}}
                 </button>
                 <button class="icon-button" type="button" aria-label="Color palette" title="Color palette">
-                  <%- include("partials/icon", { icon: "palette" }) %>
+                  {{template "icon" "palette"}}
                 </button>
                 <button class="icon-button" type="button" aria-label="Image" title="Image">
-                  <%- include("partials/icon", { icon: "image" }) %>
+                  {{template "icon" "image"}}
                 </button>
                 <label class="color-control">
                   <select name="color" aria-label="Note color">
-                    <% colors.forEach((color) => { %>
-                      <option value="<%= color %>"><%= color %></option>
-                    <% }) %>
+                    {{range .Colors}}
+                      <option value="{{.}}">{{.}}</option>
+                    {{end}}
                   </select>
                 </label>
               </div>
@@ -103,15 +100,15 @@
         <section class="summary-strip" aria-label="Workspace summary">
           <div>
             <span>Total</span>
-            <strong><%= totalNotes %></strong>
+            <strong>{{.TotalNotes}}</strong>
           </div>
           <div>
             <span>Pinned</span>
-            <strong><%= pinnedNotes.length %></strong>
+            <strong>{{len .PinnedNotes}}</strong>
           </div>
           <div>
             <span>Archived</span>
-            <strong><%= archivedNotes.length %></strong>
+            <strong>{{len .ArchivedNotes}}</strong>
           </div>
         </section>
 
@@ -121,13 +118,13 @@
               <p class="eyebrow">Priority</p>
               <h2>Pinned</h2>
             </div>
-            <span><%= pinnedNotes.length %></span>
+            <span>{{len .PinnedNotes}}</span>
           </div>
-          <p class="section-empty" data-section-empty <%= pinnedNotes.length > 0 ? "hidden" : "" %>>No pinned notes yet.</p>
+          <p class="section-empty" data-section-empty {{if gt (len .PinnedNotes) 0}}hidden{{end}}>No pinned notes yet.</p>
           <div class="note-grid">
-            <% pinnedNotes.forEach((note) => { %>
-              <%- include("partials/note-card", { note, colors }) %>
-            <% }) %>
+            {{range .PinnedNotes}}
+              {{template "note-card" (noteCard . $.Colors)}}
+            {{end}}
           </div>
         </section>
 
@@ -137,13 +134,13 @@
               <p class="eyebrow">Latest</p>
               <h2>Recent</h2>
             </div>
-            <span><%= recentNotes.length %></span>
+            <span>{{len .RecentNotes}}</span>
           </div>
-          <p class="section-empty" data-section-empty <%= recentNotes.length > 0 ? "hidden" : "" %>>No recent notes yet.</p>
+          <p class="section-empty" data-section-empty {{if gt (len .RecentNotes) 0}}hidden{{end}}>No recent notes yet.</p>
           <div class="note-grid">
-            <% recentNotes.forEach((note) => { %>
-              <%- include("partials/note-card", { note, colors }) %>
-            <% }) %>
+            {{range .RecentNotes}}
+              {{template "note-card" (noteCard . $.Colors)}}
+            {{end}}
           </div>
         </section>
 
@@ -153,13 +150,13 @@
               <p class="eyebrow">Saved away</p>
               <h2>Archived</h2>
             </div>
-            <span><%= archivedNotes.length %></span>
+            <span>{{len .ArchivedNotes}}</span>
           </div>
-          <p class="section-empty" data-section-empty <%= archivedNotes.length > 0 ? "hidden" : "" %>>No archived notes.</p>
+          <p class="section-empty" data-section-empty {{if gt (len .ArchivedNotes) 0}}hidden{{end}}>No archived notes.</p>
           <div class="note-grid">
-            <% archivedNotes.forEach((note) => { %>
-              <%- include("partials/note-card", { note, colors }) %>
-            <% }) %>
+            {{range .ArchivedNotes}}
+              {{template "note-card" (noteCard . $.Colors)}}
+            {{end}}
           </div>
         </section>
       </main>
@@ -169,3 +166,4 @@
     <script src="/ui.js" defer></script>
   </body>
 </html>
+{{end}}

@@ -4,3 +4,6 @@ node_modules
 npm-debug.log*
 .env
 README.md
+.gocache
+.gomodcache
+bin

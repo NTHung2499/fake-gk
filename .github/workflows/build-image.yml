@@ -27,12 +27,23 @@ jobs:
         id: image-tag
         run: echo "tag=$(date -u +'%Y.%m.%d.%H%M')" >> "$GITHUB_OUTPUT"
 
+      - name: Restore Buildah layer cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.local/share/containers/storage
+            ~/.cache/containers
+          key: buildah-${{ runner.os }}-${{ hashFiles('Dockerfile', 'go.mod', 'go.sum') }}
+          restore-keys: |
+            buildah-${{ runner.os }}-
+
       - name: Build image
         id: build-image
         uses: redhat-actions/buildah-build@v2
         with:
           image: ${{ env.IMAGE_NAME }}
           tags: latest ${{ steps.image-tag.outputs.tag }}
+          layers: true
           containerfiles: |
             ./Dockerfile
 
