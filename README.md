@@ -1,12 +1,11 @@
-# Fake GK
+# FakeGK
 
-A small notes app built with Go, Gin, MySQL, and server-rendered HTML.
+A small ChatGPT-style web chatbot built with Go, Gin, MySQL, and server-rendered HTML.
 
 ## Run Locally
 
 ```bash
-cp .env.example .env
-go run ./cmd/fake-gk
+APP_SECRET=dev-only-fakegk-secret-change-me go run ./cmd/fake-gk
 ```
 
 Default environment values are ready for the Kubernetes MySQL lab:
@@ -19,15 +18,32 @@ MYSQL_DATABASE=appdb
 MYSQL_USER=appuser
 MYSQL_PASSWORD=apppass123
 MYSQL_CONNECTION_LIMIT=10
+APP_SECRET=dev-only-fakegk-secret-change-me
+OPENAI_MODEL=gpt-4o-mini
+CHAT_CONTEXT_MESSAGES=30
+OPENAI_REQUEST_TIMEOUT_SECONDS=60
 ```
 
-The app auto-creates the `notes` table on startup and reuses the same schema as the previous Node.js version.
+`APP_SECRET` is used to encrypt user-provided OpenAI API keys before storing them in MySQL. Use a strong secret in shared or deployed environments.
+
+## Data Model
+
+The app auto-creates these tables on startup:
+
+```text
+users
+user_api_keys
+chat_sessions
+chat_messages
+```
+
+Users are anonymous browser users identified by an HTTP-only cookie. Each user can store one encrypted OpenAI API key and create multiple chat sessions with persisted message history.
 
 ## Docker
 
 ```bash
 docker build -t fake-gk .
-docker run --rm -p 3000:3000 fake-gk
+docker run --rm -p 3000:3000 -e APP_SECRET=change-this-secret fake-gk
 ```
 
 ## Health Checks

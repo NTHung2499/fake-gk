@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#e50914">
-    <title>Fake GK</title>
+    <title>FakeGK Chat</title>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="/styles.css">
     <script>
@@ -17,177 +17,103 @@
     </script>
   </head>
   <body>
-    <header class="workspace-header">
-      <div class="brand-lockup">
-        <div class="brand-mark">N</div>
-        <div>
-          <h1>Notes</h1>
-          <p>Personal workspace</p>
+    <div class="chat-app" data-chat-app data-active-session-id="{{.ActiveSessionID}}" data-has-key="{{.HasAPIKey}}">
+      <aside class="session-rail" aria-label="Chat sessions">
+        <div class="brand-panel">
+          <div class="brand-mark">F</div>
+          <div>
+            <h1>FakeGK</h1>
+            <p>Personal AI workspace</p>
+          </div>
         </div>
-      </div>
 
-      <label class="search-shell" aria-label="Search notes">
-        {{template "icon" "search"}}
-        <input type="search" placeholder="Search notes" aria-label="Search notes" data-note-search>
-        <button class="search-clear" type="button" aria-label="Clear search" title="Clear search" data-search-clear hidden>Clear</button>
-      </label>
+        <button class="new-chat-button" type="button" data-new-session>
+          <span>New chat</span>
+          <strong>+</strong>
+        </button>
 
-      <div class="header-actions">
-        <button class="icon-button" type="button" aria-label="Refresh notes" title="Refresh notes" data-refresh-button>
-          {{template "icon" "refresh"}}
-        </button>
-        <button class="icon-button" type="button" data-theme-toggle aria-label="Toggle dark mode" title="Toggle dark mode" aria-pressed="false">
-          <span class="theme-icon theme-icon-moon" data-theme-icon="moon">{{template "icon" "moon"}}</span>
-          <span class="theme-icon theme-icon-sun" data-theme-icon="sun">{{template "icon" "sun"}}</span>
-        </button>
-        <div class="avatar" title="Profile">GK</div>
-      </div>
-    </header>
+        <div class="session-list" data-session-list>
+          {{range .Sessions}}
+            <button class="session-item {{if eq .ID $.ActiveSessionID}}is-active{{end}}" type="button" data-session-id="{{.ID}}">
+              <span>{{.Title}}</span>
+              <small>Chat</small>
+            </button>
+          {{else}}
+            <div class="session-empty" data-session-empty>
+              <strong>No chats yet</strong>
+              <p>Create one when you are ready.</p>
+            </div>
+          {{end}}
+        </div>
 
-    <div class="workspace-shell">
-      <aside class="workspace-nav" aria-label="Workspace navigation">
-        <button class="nav-item is-active" type="button">
-          <span class="nav-icon">{{template "icon" "note"}}</span>
-          <span>Notes</span>
-          <strong>{{len .Notes}}</strong>
-        </button>
-        <button class="nav-item" type="button">
-          <span class="nav-icon">{{template "icon" "archive"}}</span>
-          <span>Archived</span>
-          <strong>{{len .ArchivedNotes}}</strong>
-        </button>
+        <div class="rail-footer">
+          {{if .HasAPIKey}}
+            <div class="key-chip">
+              <span>API key</span>
+              <strong>{{.KeyHint}}</strong>
+            </div>
+          {{else}}
+            <div class="key-chip is-missing">
+              <span>API key</span>
+              <strong>Not set</strong>
+            </div>
+          {{end}}
+          <button class="icon-button" type="button" data-theme-toggle aria-label="Toggle dark mode" title="Toggle dark mode" aria-pressed="false">
+            <span class="theme-icon theme-icon-moon" data-theme-icon="moon">{{template "icon" "moon"}}</span>
+            <span class="theme-icon theme-icon-sun" data-theme-icon="sun">{{template "icon" "sun"}}</span>
+          </button>
+        </div>
       </aside>
 
-      <main class="workspace-main">
-        <div class="search-status" aria-live="polite" data-search-status hidden></div>
-        <section class="global-empty" data-global-empty hidden>
-          <span class="empty-mark">S</span>
+      <main class="chat-main">
+        <header class="chat-header">
           <div>
-            <strong>No notes found</strong>
-            <p>Try a different word or clear the search.</p>
+            <p class="eyebrow">Model {{.Model}}</p>
+            <h2 data-chat-title>{{if gt .ActiveSessionID 0}}{{range .Sessions}}{{if eq .ID $.ActiveSessionID}}{{.Title}}{{end}}{{end}}{{else}}New chat{{end}}</h2>
           </div>
-        </section>
-
-        <section class="capture-panel" aria-label="Create note">
-          <div class="capture-copy">
-            <p class="eyebrow">Quick capture</p>
-            <h2>Capture it before it slips.</h2>
+          <div class="header-actions">
+            <button class="ghost-button" type="button" data-rename-session>Rename</button>
+            <button class="ghost-button danger" type="button" data-delete-session>Delete</button>
           </div>
+        </header>
 
-          <form class="composer" action="/notes" method="post" data-composer data-composer-open="false">
-            <div class="composer-collapsed">Start a new note</div>
-            <div class="composer-fields">
-              <input name="title" type="text" placeholder="Title" maxlength="255" aria-label="Note title" data-composer-title>
-              <textarea name="body" rows="3" placeholder="Write the details..." aria-label="Note body"></textarea>
+        {{if not .HasAPIKey}}
+          <section class="key-setup" data-key-setup>
+            <div class="setup-card">
+              <p class="eyebrow">Bring your own key</p>
+              <h2>Add your OpenAI API key to start chatting.</h2>
+              <p>Your key is encrypted before being stored and is only used from this server to call OpenAI for your chats.</p>
+              <form data-key-form>
+                <input name="apiKey" type="password" autocomplete="off" placeholder="sk-..." aria-label="OpenAI API key" required>
+                <button class="primary-button" type="submit">Save key</button>
+              </form>
+              <p class="form-status" data-key-status aria-live="polite"></p>
             </div>
-            <div class="composer-actions">
-              <div class="composer-tools">
-                <button class="icon-button secondary-tool" type="button" aria-label="Checklist coming soon" title="Checklist coming soon" aria-disabled="true">
-                  {{template "icon" "check-square"}}
-                </button>
-                <button class="icon-button secondary-tool" type="button" aria-label="Palette shortcuts coming soon" title="Palette shortcuts coming soon" aria-disabled="true">
-                  {{template "icon" "palette"}}
-                </button>
-                <button class="icon-button secondary-tool" type="button" aria-label="Image notes coming soon" title="Image notes coming soon" aria-disabled="true">
-                  {{template "icon" "image"}}
-                </button>
-                <label class="color-control">
-                  <select name="color" aria-label="Note color">
-                    {{range .Colors}}
-                      <option value="{{.}}">{{.}}</option>
-                    {{end}}
-                  </select>
-                </label>
+          </section>
+        {{end}}
+
+        <section class="message-timeline" data-message-list aria-live="polite">
+          {{range .Messages}}
+            <article class="message message-{{.Role}} {{if eq .Status "error"}}is-error{{end}}" data-message-id="{{.ID}}">
+              <div class="message-avatar">{{if eq .Role "user"}}U{{else}}F{{end}}</div>
+              <div class="message-body">
+                <div class="message-meta">{{if eq .Role "user"}}You{{else}}FakeGK{{end}}</div>
+                <p>{{if eq .Status "error"}}{{.Error}}{{else}}{{.Content}}{{end}}</p>
               </div>
-              <div class="composer-submit">
-                <button class="ghost-button" type="button" data-composer-close>Close</button>
-                <button class="primary-button" type="submit">Add note</button>
-              </div>
+            </article>
+          {{else}}
+            <div class="welcome-panel" data-welcome-panel>
+              <span class="welcome-mark">F</span>
+              <h2>Start a focused conversation.</h2>
+              <p>Create a session, ask a question, and FakeGK will keep the history tied to this chat.</p>
             </div>
-          </form>
+          {{end}}
         </section>
 
-        <section class="summary-strip" aria-label="Workspace summary">
-          <div>
-            <span>Total</span>
-            <strong>{{.TotalNotes}}</strong>
-          </div>
-          <div>
-            <span>Pinned</span>
-            <strong>{{len .PinnedNotes}}</strong>
-          </div>
-          <div>
-            <span>Archived</span>
-            <strong>{{len .ArchivedNotes}}</strong>
-          </div>
-        </section>
-
-        <section class="note-section" data-note-section>
-          <div class="section-header">
-            <div>
-              <p class="eyebrow">Priority</p>
-              <h2>Pinned</h2>
-            </div>
-            <span>{{len .PinnedNotes}}</span>
-          </div>
-          <div class="section-empty" data-section-empty {{if gt (len .PinnedNotes) 0}}hidden{{end}}>
-            <span class="empty-mark">P</span>
-            <div>
-              <strong>No pinned notes yet.</strong>
-              <p>Pin important ideas so they stay within reach.</p>
-            </div>
-          </div>
-          <div class="note-grid">
-            {{range .PinnedNotes}}
-              {{template "note-card" (noteCard . $.Colors)}}
-            {{end}}
-          </div>
-        </section>
-
-        <section class="note-section" data-note-section>
-          <div class="section-header">
-            <div>
-              <p class="eyebrow">Latest</p>
-              <h2>Recent</h2>
-            </div>
-            <span>{{len .RecentNotes}}</span>
-          </div>
-          <div class="section-empty" data-section-empty {{if gt (len .RecentNotes) 0}}hidden{{end}}>
-            <span class="empty-mark">N</span>
-            <div>
-              <strong>No recent notes yet.</strong>
-              <p>Capture something above and it will land here.</p>
-            </div>
-          </div>
-          <div class="note-grid">
-            {{range .RecentNotes}}
-              {{template "note-card" (noteCard . $.Colors)}}
-            {{end}}
-          </div>
-        </section>
-
-        <section class="note-section" data-note-section>
-          <div class="section-header">
-            <div>
-              <p class="eyebrow">Saved away</p>
-              <h2>Archived</h2>
-            </div>
-            <span>{{len .ArchivedNotes}}</span>
-          </div>
-          <div class="section-empty" data-section-empty {{if gt (len .ArchivedNotes) 0}}hidden{{end}}>
-            <span class="empty-mark">A</span>
-            <div>
-              <strong>No archived notes.</strong>
-              <p>Archived notes will stay searchable here.</p>
-            </div>
-          </div>
-          <div class="note-grid">
-            {{range .ArchivedNotes}}
-              {{template "note-card" (noteCard . $.Colors)}}
-            {{end}}
-          </div>
-        </section>
-
+        <form class="chat-composer" data-chat-form>
+          <textarea name="message" rows="1" placeholder="{{if .HasAPIKey}}Ask FakeGK anything...{{else}}Add your API key first...{{end}}" aria-label="Message" {{if not .HasAPIKey}}disabled{{end}}></textarea>
+          <button class="send-button" type="submit" {{if not .HasAPIKey}}disabled{{end}}>Send</button>
+        </form>
       </main>
     </div>
 
