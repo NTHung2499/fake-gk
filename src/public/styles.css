@@ -260,38 +260,57 @@ p {
 }
 
 .workspace-shell {
-  align-items: flex-start;
-  gap: 24px;
+  display: grid;
+  grid-template-columns: 164px minmax(0, 1fr);
+  align-items: start;
+  gap: 16px;
   width: min(1320px, calc(100% - 40px));
-  margin: 24px auto 56px;
+  margin: 22px auto 56px;
 }
 
 .workspace-nav {
   position: sticky;
   top: 96px;
   display: grid;
-  gap: 8px;
-  width: 210px;
-  flex: 0 0 210px;
+  gap: 6px;
+  width: 100%;
+  padding: 4px;
 }
 
 .nav-item {
+  position: relative;
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: center;
-  gap: 10px;
-  min-height: 44px;
-  padding: 0 12px;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 9px;
   border: 1px solid transparent;
-  border-radius: 12px;
+  border-radius: 10px;
   color: var(--muted);
+  transition: background 140ms ease, border-color 140ms ease, color 140ms ease;
+}
+
+.nav-item::before {
+  position: absolute;
+  left: -4px;
+  width: 3px;
+  height: 18px;
+  border-radius: 999px;
+  background: transparent;
+  content: "";
+  transition: background 140ms ease;
 }
 
 .nav-item:hover,
 .nav-item.is-active {
   color: var(--text);
-  background: color-mix(in srgb, var(--accent-soft) 72%, var(--surface));
-  border-color: color-mix(in srgb, var(--accent) 32%, var(--border));
+  background: color-mix(in srgb, var(--accent-soft) 36%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+.nav-item.is-active::before {
+  background: var(--accent);
 }
 
 .nav-icon {
@@ -305,22 +324,29 @@ p {
 }
 
 .nav-item strong {
+  min-width: 24px;
+  padding: 3px 7px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 70%, transparent);
+  color: color-mix(in srgb, var(--text) 72%, var(--muted));
+  text-align: center;
   font-size: 12px;
   font-weight: 720;
 }
 
 .workspace-main {
-  flex: 1;
+  width: min(100%, 1040px);
   min-width: 0;
 }
 
 .capture-panel {
-  align-items: stretch;
-  justify-content: space-between;
-  gap: 24px;
-  padding: 20px;
+  display: grid;
+  grid-template-columns: minmax(170px, 0.42fr) minmax(360px, 1fr);
+  align-items: start;
+  gap: 16px;
+  padding: 16px;
   border: 1px solid var(--border);
-  border-radius: 18px;
+  border-radius: 16px;
   background:
     linear-gradient(145deg, color-mix(in srgb, var(--surface) 92%, transparent), color-mix(in srgb, var(--accent-soft) 34%, var(--surface))),
     var(--surface);
@@ -328,20 +354,20 @@ p {
 }
 
 .capture-copy {
-  width: min(320px, 100%);
-  padding-top: 4px;
+  width: auto;
+  padding: 2px 0 0;
 }
 
 .capture-copy h2 {
   margin-top: 6px;
-  max-width: 15ch;
-  font-size: 24px;
+  max-width: 22ch;
+  font-size: 18px;
   font-weight: 720;
-  line-height: 1.12;
+  line-height: 1.2;
 }
 
 .composer {
-  width: min(620px, 100%);
+  width: 100%;
   padding: 14px;
   border: 1px solid var(--border);
   border-radius: 14px;
@@ -471,16 +497,18 @@ select {
 }
 
 .summary-strip {
-  gap: 10px;
-  margin: 16px 0 28px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 12px 0 22px;
 }
 
 .summary-strip div {
-  min-width: 132px;
-  padding: 12px 14px;
+  min-width: 0;
+  padding: 10px 12px;
   border: 1px solid var(--border);
-  border-radius: 14px;
-  background: color-mix(in srgb, var(--surface) 82%, var(--accent-soft));
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--surface) 88%, var(--accent-soft));
 }
 
 .summary-strip span {
@@ -492,12 +520,12 @@ select {
 
 .summary-strip strong {
   display: block;
-  margin-top: 3px;
-  font-size: 22px;
+  margin-top: 2px;
+  font-size: 20px;
 }
 
 .note-section {
-  margin-top: 28px;
+  margin-top: 22px;
 }
 
 .search-status {
@@ -536,8 +564,8 @@ select {
 .section-empty {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 16px;
+  gap: 10px;
+  padding: 12px;
   border: 1px dashed var(--border-strong);
   border-radius: 12px;
   color: var(--muted);
@@ -561,9 +589,9 @@ select {
   display: grid;
   flex: 0 0 auto;
   place-items: center;
-  width: 34px;
-  height: 34px;
-  border-radius: 10px;
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
   background: color-mix(in srgb, var(--accent) 14%, var(--surface));
   color: var(--accent);
   font-size: 12px;
@@ -591,8 +619,8 @@ select {
 
 .note-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 14px;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
 }
 
 .note {
@@ -786,6 +814,10 @@ select {
     width: min(100% - 28px, 1320px);
   }
 
+  .workspace-main {
+    width: 100%;
+  }
+
   .workspace-nav {
     position: static;
     display: flex;
@@ -795,11 +827,13 @@ select {
   }
 
   .nav-item {
-    min-width: 150px;
+    min-width: 142px;
   }
 
   .capture-panel {
     display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
   }
 
   .capture-copy h2 {
@@ -826,6 +860,10 @@ select {
   .capture-panel {
     padding: 14px;
     border-radius: 14px;
+  }
+
+  .capture-copy {
+    display: none;
   }
 
   .capture-copy h2 {
