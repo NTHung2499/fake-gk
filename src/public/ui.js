@@ -93,6 +93,15 @@
   }
 
   function renderSession(session, active = false) {
+    const existing = document.querySelector(`.session-item[data-session-id="${session.id}"]`);
+    if (existing) {
+      existing.querySelector("span").textContent = session.title || "New chat";
+      if (active) {
+        setActiveSession(session.id, session.title);
+      }
+      return existing;
+    }
+
     const empty = sessionList.querySelector("[data-session-empty]");
     if (empty) {
       empty.remove();
@@ -182,6 +191,14 @@
     const streamTarget = assistantNode.querySelector("[data-stream-target]");
 
     const source = new EventSource(`/api/sessions/${activeSessionId}/stream?message=${encodeURIComponent(message)}`);
+    source.addEventListener("session", (event) => {
+      const payload = JSON.parse(event.data);
+      if (!payload.session) {
+        return;
+      }
+      renderSession(payload.session, true);
+      setActiveSession(payload.session.id, payload.session.title);
+    });
     source.addEventListener("delta", (event) => {
       const payload = JSON.parse(event.data);
       streamTarget.textContent += payload.delta || "";

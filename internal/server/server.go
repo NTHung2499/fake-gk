@@ -328,10 +328,25 @@ func (s *Server) streamMessage(c *gin.Context) {
 	}
 
 	if _, err := s.chat.AddMessage(c.Request.Context(), user.ID, sessionID, chat.RoleUser, message, "", chat.StatusComplete, ""); err != nil {
-		_ = send("app_error", gin.H{"error": err.Error()})
-		return
+		if !errors.Is(err, chat.ErrNotFound) {
+			_ = send("app_error", gin.H{"error": err.Error()})
+			return
+		}
+
+		session, createErr := s.chat.CreateSession(c.Request.Context(), user.ID, titleFromMessage(message))
+		if createErr != nil {
+			_ = send("app_error", gin.H{"error": createErr.Error()})
+			return
+		}
+		sessionID = session.ID
+		_ = send("session", gin.H{"session": session})
+		if _, err := s.chat.AddMessage(c.Request.Context(), user.ID, sessionID, chat.RoleUser, message, "", chat.StatusComplete, ""); err != nil {
+			_ = send("app_error", gin.H{"error": err.Error()})
+			return
+		}
+	} else {
+		s.maybeRenameSession(c, user.ID, sessionID, message)
 	}
-	s.maybeRenameSession(c, user.ID, sessionID, message)
 
 	contextMessages, err := s.openAIContext(c, user.ID, sessionID)
 	if err != nil {
@@ -459,12 +474,16 @@ func (s *Server) maybeRenameSession(c *gin.Context, userID, sessionID int64, mes
 	if err != nil || session.Title != "New chat" {
 		return
 	}
+	_ = s.chat.RenameSession(c.Request.Context(), userID, sessionID, titleFromMessage(message))
+}
+
+func titleFromMessage(message string) string {
 	title := strings.TrimSpace(message)
 	runes := []rune(title)
 	if len(runes) > 48 {
 		title = string(runes[:48]) + "..."
 	}
-	_ = s.chat.RenameSession(c.Request.Context(), userID, sessionID, title)
+	return title
 }
 
 func (s *Server) handleChatError(c *gin.Context, err error) {
