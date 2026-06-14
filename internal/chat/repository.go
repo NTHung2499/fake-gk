@@ -208,7 +208,7 @@ func (r *Repository) ListMessages(ctx context.Context, userID, sessionID int64, 
 	}
 	defer rows.Close()
 
-	var messages []Message
+	messages := make([]Message, 0)
 	for rows.Next() {
 		var message Message
 		if err := rows.Scan(&message.ID, &message.SessionID, &message.Role, &message.Content, &message.Model, &message.Status, &message.Error, &message.CreatedAt); err != nil {

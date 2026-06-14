@@ -1,6 +1,10 @@
 package chat
 
-import "testing"
+import (
+	"encoding/json"
+	"strings"
+	"testing"
+)
 
 func TestNewPublicID(t *testing.T) {
 	id, err := NewPublicID()
@@ -47,5 +51,21 @@ func TestNormalizeRoleAndStatus(t *testing.T) {
 	}
 	if got := normalizeStatus("weird"); got != StatusComplete {
 		t.Fatalf("normalizeStatus(weird) = %q", got)
+	}
+}
+
+func TestEmptyMessagesMarshalAsArray(t *testing.T) {
+	messages := make([]Message, 0)
+	payload, err := json.Marshal(struct {
+		Messages []Message `json:"messages"`
+	}{Messages: messages})
+	if err != nil {
+		t.Fatalf("Marshal() error = %v", err)
+	}
+	if strings.Contains(string(payload), "null") {
+		t.Fatalf("empty messages marshaled as null: %s", payload)
+	}
+	if !strings.Contains(string(payload), `"messages":[]`) {
+		t.Fatalf("empty messages did not marshal as array: %s", payload)
 	}
 }

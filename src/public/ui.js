@@ -136,8 +136,9 @@
 
   async function loadMessages(sessionId, title) {
     const payload = await requestJSON(`/api/sessions/${sessionId}/messages`);
+    const messages = Array.isArray(payload.messages) ? payload.messages : [];
     messageList.innerHTML = "";
-    payload.messages.forEach((message) => renderMessage(message));
+    messages.forEach((message) => renderMessage(message));
     ensureWelcome();
     setActiveSession(sessionId, title);
     scrollToBottom();
