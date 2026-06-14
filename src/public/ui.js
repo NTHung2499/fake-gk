@@ -197,17 +197,20 @@
       chatForm.querySelector("button").disabled = false;
       messageInput.focus();
     });
-    source.addEventListener("error", (event) => {
-      let messageText = "Streaming failed. Please try again.";
-      if (event.data) {
-        try {
-          const payload = JSON.parse(event.data);
-          messageText = payload.error || messageText;
-        } catch (_) {
-          messageText = event.data;
-        }
-      }
+    source.addEventListener("app_error", (event) => {
+      const payload = JSON.parse(event.data);
+      const messageText = payload.error || "Streaming failed. Please try again.";
       streamTarget.textContent = messageText;
+      assistantNode.classList.add("is-error");
+      source.close();
+      isStreaming = false;
+      chatForm.querySelector("button").disabled = false;
+    });
+    source.addEventListener("error", () => {
+      if (!isStreaming) {
+        return;
+      }
+      streamTarget.textContent = "Streaming connection closed unexpectedly. Please try again.";
       assistantNode.classList.add("is-error");
       source.close();
       isStreaming = false;

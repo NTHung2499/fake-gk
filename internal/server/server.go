@@ -299,49 +299,44 @@ func (s *Server) createMessage(c *gin.Context) {
 }
 
 func (s *Server) streamMessage(c *gin.Context) {
-	user, sessionID, ok := s.userAndSessionID(c)
-	if !ok {
+	user, err := s.ensureUser(c)
+	beginSSE(c)
+	send := func(event string, payload any) error {
+		return sendSSE(c, event, payload)
+	}
+	if err != nil {
+		_ = send("app_error", gin.H{"error": err.Error()})
 		return
 	}
+
+	sessionID, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil || sessionID <= 0 {
+		_ = send("app_error", gin.H{"error": "invalid session id"})
+		return
+	}
+
 	message := strings.TrimSpace(c.Query("message"))
 	if message == "" {
-		s.sseError(c, http.StatusBadRequest, "message is required")
+		_ = send("app_error", gin.H{"error": "message is required"})
 		return
 	}
 
 	apiKey, err := s.userAPIKey(c, user.ID)
 	if err != nil {
-		s.sseError(c, statusForError(err), err.Error())
+		_ = send("app_error", gin.H{"error": err.Error()})
 		return
 	}
 
 	if _, err := s.chat.AddMessage(c.Request.Context(), user.ID, sessionID, chat.RoleUser, message, "", chat.StatusComplete, ""); err != nil {
-		s.sseError(c, statusForError(err), err.Error())
+		_ = send("app_error", gin.H{"error": err.Error()})
 		return
 	}
 	s.maybeRenameSession(c, user.ID, sessionID, message)
 
 	contextMessages, err := s.openAIContext(c, user.ID, sessionID)
 	if err != nil {
-		s.sseError(c, statusForError(err), err.Error())
+		_ = send("app_error", gin.H{"error": err.Error()})
 		return
-	}
-
-	c.Header("Content-Type", "text/event-stream")
-	c.Header("Cache-Control", "no-cache")
-	c.Header("Connection", "keep-alive")
-	c.Status(http.StatusOK)
-
-	send := func(event string, payload any) error {
-		data, err := json.Marshal(payload)
-		if err != nil {
-			return err
-		}
-		if _, err := fmt.Fprintf(c.Writer, "event: %s\ndata: %s\n\n", event, data); err != nil {
-			return err
-		}
-		c.Writer.Flush()
-		return nil
 	}
 
 	answer, err := s.openai.Stream(c.Request.Context(), apiKey, s.cfg.OpenAI.Model, defaultPrompt, contextMessages, func(delta string) error {
@@ -349,12 +344,12 @@ func (s *Server) streamMessage(c *gin.Context) {
 	})
 	if err != nil {
 		assistantMessage, _ := s.chat.AddMessage(c.Request.Context(), user.ID, sessionID, chat.RoleAssistant, "", s.cfg.OpenAI.Model, chat.StatusError, err.Error())
-		_ = send("error", gin.H{"error": err.Error(), "message": assistantMessage})
+		_ = send("app_error", gin.H{"error": err.Error(), "message": assistantMessage})
 		return
 	}
 	assistantMessage, err := s.chat.AddMessage(c.Request.Context(), user.ID, sessionID, chat.RoleAssistant, answer, s.cfg.OpenAI.Model, chat.StatusComplete, "")
 	if err != nil {
-		_ = send("error", gin.H{"error": err.Error()})
+		_ = send("app_error", gin.H{"error": err.Error()})
 		return
 	}
 	_ = send("done", gin.H{"message": assistantMessage})
@@ -486,13 +481,23 @@ func statusForError(err error) int {
 	return http.StatusInternalServerError
 }
 
-func (s *Server) sseError(c *gin.Context, status int, message string) {
+func beginSSE(c *gin.Context) {
 	c.Header("Content-Type", "text/event-stream")
 	c.Header("Cache-Control", "no-cache")
-	c.Status(status)
-	data, _ := json.Marshal(gin.H{"error": message})
-	_, _ = fmt.Fprintf(c.Writer, "event: error\ndata: %s\n\n", data)
+	c.Header("Connection", "keep-alive")
+	c.Status(http.StatusOK)
+}
+
+func sendSSE(c *gin.Context, event string, payload any) error {
+	data, err := json.Marshal(payload)
+	if err != nil {
+		return err
+	}
+	if _, err := fmt.Fprintf(c.Writer, "event: %s\ndata: %s\n\n", event, data); err != nil {
+		return err
+	}
 	c.Writer.Flush()
+	return nil
 }
 
 func (s *Server) jsonError(c *gin.Context, status int, err error) {
