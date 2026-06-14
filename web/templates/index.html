@@ -4,7 +4,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#d6a725">
+    <meta name="theme-color" content="#e50914">
     <title>Fake GK</title>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="/styles.css">
@@ -29,10 +29,11 @@
       <label class="search-shell" aria-label="Search notes">
         {{template "icon" "search"}}
         <input type="search" placeholder="Search notes" aria-label="Search notes" data-note-search>
+        <button class="search-clear" type="button" aria-label="Clear search" title="Clear search" data-search-clear hidden>Clear</button>
       </label>
 
       <div class="header-actions">
-        <button class="icon-button" type="button" aria-label="Refresh" title="Refresh">
+        <button class="icon-button" type="button" aria-label="Refresh notes" title="Refresh notes" data-refresh-button>
           {{template "icon" "refresh"}}
         </button>
         <button class="icon-button" type="button" data-theme-toggle aria-label="Toggle dark mode" title="Toggle dark mode" aria-pressed="false">
@@ -58,6 +59,15 @@
       </aside>
 
       <main class="workspace-main">
+        <div class="search-status" aria-live="polite" data-search-status hidden></div>
+        <section class="global-empty" data-global-empty hidden>
+          <span class="empty-mark">S</span>
+          <div>
+            <strong>No notes found</strong>
+            <p>Try a different word or clear the search.</p>
+          </div>
+        </section>
+
         <section class="capture-panel" aria-label="Create note">
           <div class="capture-copy">
             <p class="eyebrow">Quick capture</p>
@@ -72,13 +82,13 @@
             </div>
             <div class="composer-actions">
               <div class="composer-tools">
-                <button class="icon-button" type="button" aria-label="Checklist" title="Checklist">
+                <button class="icon-button secondary-tool" type="button" aria-label="Checklist coming soon" title="Checklist coming soon" aria-disabled="true">
                   {{template "icon" "check-square"}}
                 </button>
-                <button class="icon-button" type="button" aria-label="Color palette" title="Color palette">
+                <button class="icon-button secondary-tool" type="button" aria-label="Palette shortcuts coming soon" title="Palette shortcuts coming soon" aria-disabled="true">
                   {{template "icon" "palette"}}
                 </button>
-                <button class="icon-button" type="button" aria-label="Image" title="Image">
+                <button class="icon-button secondary-tool" type="button" aria-label="Image notes coming soon" title="Image notes coming soon" aria-disabled="true">
                   {{template "icon" "image"}}
                 </button>
                 <label class="color-control">
@@ -120,7 +130,13 @@
             </div>
             <span>{{len .PinnedNotes}}</span>
           </div>
-          <p class="section-empty" data-section-empty {{if gt (len .PinnedNotes) 0}}hidden{{end}}>No pinned notes yet.</p>
+          <div class="section-empty" data-section-empty {{if gt (len .PinnedNotes) 0}}hidden{{end}}>
+            <span class="empty-mark">P</span>
+            <div>
+              <strong>No pinned notes yet.</strong>
+              <p>Pin important ideas so they stay within reach.</p>
+            </div>
+          </div>
           <div class="note-grid">
             {{range .PinnedNotes}}
               {{template "note-card" (noteCard . $.Colors)}}
@@ -136,7 +152,13 @@
             </div>
             <span>{{len .RecentNotes}}</span>
           </div>
-          <p class="section-empty" data-section-empty {{if gt (len .RecentNotes) 0}}hidden{{end}}>No recent notes yet.</p>
+          <div class="section-empty" data-section-empty {{if gt (len .RecentNotes) 0}}hidden{{end}}>
+            <span class="empty-mark">N</span>
+            <div>
+              <strong>No recent notes yet.</strong>
+              <p>Capture something above and it will land here.</p>
+            </div>
+          </div>
           <div class="note-grid">
             {{range .RecentNotes}}
               {{template "note-card" (noteCard . $.Colors)}}
@@ -152,13 +174,20 @@
             </div>
             <span>{{len .ArchivedNotes}}</span>
           </div>
-          <p class="section-empty" data-section-empty {{if gt (len .ArchivedNotes) 0}}hidden{{end}}>No archived notes.</p>
+          <div class="section-empty" data-section-empty {{if gt (len .ArchivedNotes) 0}}hidden{{end}}>
+            <span class="empty-mark">A</span>
+            <div>
+              <strong>No archived notes.</strong>
+              <p>Archived notes will stay searchable here.</p>
+            </div>
+          </div>
           <div class="note-grid">
             {{range .ArchivedNotes}}
               {{template "note-card" (noteCard . $.Colors)}}
             {{end}}
           </div>
         </section>
+
       </main>
     </div>
 

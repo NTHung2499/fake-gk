@@ -39,7 +39,7 @@
   </form>
 
   <div class="note-actions">
-    <span class="note-state">{{if .Note.IsArchived}}Archived{{else if .Note.IsPinned}}Pinned{{else}}Active{{end}}</span>
+    <span class="note-state" data-state="{{if .Note.IsArchived}}archived{{else if .Note.IsPinned}}pinned{{else}}active{{end}}">{{if .Note.IsArchived}}Archived{{else if .Note.IsPinned}}Pinned{{else}}Active{{end}}</span>
     <form action="/notes/{{.Note.ID}}/archive" method="post">
       <button class="icon-button" type="submit" title="{{if .Note.IsArchived}}Restore note{{else}}Archive note{{end}}" aria-label="{{if .Note.IsArchived}}Restore note{{else}}Archive note{{end}}">
         {{if .Note.IsArchived}}{{template "icon" "restore"}}{{else}}{{template "icon" "archive"}}{{end}}
