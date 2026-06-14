@@ -17,6 +17,7 @@ import (
 	"github.com/nthung2499/fake-gk/internal/config"
 	"github.com/nthung2499/fake-gk/internal/db"
 	"github.com/nthung2499/fake-gk/internal/openai"
+	modelrouter "github.com/nthung2499/fake-gk/internal/router"
 	"github.com/nthung2499/fake-gk/internal/secrets"
 )
 
@@ -31,12 +32,15 @@ type Server struct {
 	chat   *chat.Repository
 	cipher *secrets.Cipher
 	openai *openai.Client
+	router *modelrouter.Router
 }
 
 type indexData struct {
 	HasAPIKey       bool
 	KeyHint         string
 	Model           string
+	FastModel       string
+	DeepModel       string
 	Sessions        []chat.Session
 	ActiveSessionID int64
 	Messages        []chat.Message
@@ -60,12 +64,18 @@ func New(cfg config.Config, store *db.Store) (*gin.Engine, error) {
 		return nil, err
 	}
 
+	openAIClient := openai.NewClient(time.Duration(cfg.OpenAI.RequestTimeoutSeconds) * time.Second)
 	s := &Server{
 		cfg:    cfg,
 		store:  store,
 		chat:   chat.NewRepository(store.DB),
 		cipher: cipher,
-		openai: openai.NewClient(time.Duration(cfg.OpenAI.RequestTimeoutSeconds) * time.Second),
+		openai: openAIClient,
+		router: modelrouter.New(openAIClient, modelrouter.Config{
+			FastModel:   cfg.OpenAI.FastModel,
+			DeepModel:   cfg.OpenAI.DeepModel,
+			RouterModel: cfg.OpenAI.RouterModel,
+		}),
 	}
 
 	tmpl, err := loadTemplates()
@@ -171,7 +181,9 @@ func (s *Server) index(c *gin.Context) {
 	c.HTML(http.StatusOK, "index.html", indexData{
 		HasAPIKey:       hasKey,
 		KeyHint:         key.KeyHint,
-		Model:           s.cfg.OpenAI.Model,
+		Model:           s.cfg.OpenAI.FastModel,
+		FastModel:       s.cfg.OpenAI.FastModel,
+		DeepModel:       s.cfg.OpenAI.DeepModel,
 		Sessions:        sessions,
 		ActiveSessionID: activeSessionID,
 		Messages:        messages,
@@ -284,18 +296,19 @@ func (s *Server) createMessage(c *gin.Context) {
 		s.handleChatError(c, err)
 		return
 	}
-	answer, err := s.openai.Generate(c.Request.Context(), apiKey, s.cfg.OpenAI.Model, defaultPrompt, contextMessages)
+	decision := s.router.Decide(c.Request.Context(), apiKey, req.Message, contextMessages)
+	answer, err := s.openai.Generate(c.Request.Context(), apiKey, decision.Model, defaultPrompt, contextMessages)
 	if err != nil {
-		assistantMessage, _ := s.chat.AddMessage(c.Request.Context(), user.ID, sessionID, chat.RoleAssistant, "", s.cfg.OpenAI.Model, chat.StatusError, err.Error())
-		c.JSON(http.StatusBadGateway, gin.H{"userMessage": userMessage, "assistantMessage": assistantMessage, "error": err.Error()})
+		assistantMessage, _ := s.chat.AddMessage(c.Request.Context(), user.ID, sessionID, chat.RoleAssistant, "", decision.Model, chat.StatusError, err.Error())
+		c.JSON(http.StatusBadGateway, gin.H{"userMessage": userMessage, "assistantMessage": assistantMessage, "route": decision, "error": err.Error()})
 		return
 	}
-	assistantMessage, err := s.chat.AddMessage(c.Request.Context(), user.ID, sessionID, chat.RoleAssistant, answer, s.cfg.OpenAI.Model, chat.StatusComplete, "")
+	assistantMessage, err := s.chat.AddMessage(c.Request.Context(), user.ID, sessionID, chat.RoleAssistant, answer, decision.Model, chat.StatusComplete, "")
 	if err != nil {
 		s.handleChatError(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"userMessage": userMessage, "assistantMessage": assistantMessage})
+	c.JSON(http.StatusOK, gin.H{"userMessage": userMessage, "assistantMessage": assistantMessage, "route": decision})
 }
 
 func (s *Server) streamMessage(c *gin.Context) {
@@ -354,15 +367,18 @@ func (s *Server) streamMessage(c *gin.Context) {
 		return
 	}
 
-	answer, err := s.openai.Stream(c.Request.Context(), apiKey, s.cfg.OpenAI.Model, defaultPrompt, contextMessages, func(delta string) error {
+	decision := s.router.Decide(c.Request.Context(), apiKey, message, contextMessages)
+	_ = send("route", gin.H{"route": decision.Route, "model": decision.Model, "reason": decision.Reason})
+
+	answer, err := s.openai.Stream(c.Request.Context(), apiKey, decision.Model, defaultPrompt, contextMessages, func(delta string) error {
 		return send("delta", gin.H{"delta": delta})
 	})
 	if err != nil {
-		assistantMessage, _ := s.chat.AddMessage(c.Request.Context(), user.ID, sessionID, chat.RoleAssistant, "", s.cfg.OpenAI.Model, chat.StatusError, err.Error())
+		assistantMessage, _ := s.chat.AddMessage(c.Request.Context(), user.ID, sessionID, chat.RoleAssistant, "", decision.Model, chat.StatusError, err.Error())
 		_ = send("app_error", gin.H{"error": err.Error(), "message": assistantMessage})
 		return
 	}
-	assistantMessage, err := s.chat.AddMessage(c.Request.Context(), user.ID, sessionID, chat.RoleAssistant, answer, s.cfg.OpenAI.Model, chat.StatusComplete, "")
+	assistantMessage, err := s.chat.AddMessage(c.Request.Context(), user.ID, sessionID, chat.RoleAssistant, answer, decision.Model, chat.StatusComplete, "")
 	if err != nil {
 		_ = send("app_error", gin.H{"error": err.Error()})
 		return

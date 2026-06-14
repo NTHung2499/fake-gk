@@ -68,7 +68,7 @@
       <main class="chat-main">
         <header class="chat-header">
           <div>
-            <p class="eyebrow">Model {{.Model}}</p>
+            <p class="eyebrow" data-model-label>Auto · {{.FastModel}} / {{.DeepModel}}</p>
             <h2 data-chat-title>{{if gt .ActiveSessionID 0}}{{range .Sessions}}{{if eq .ID $.ActiveSessionID}}{{.Title}}{{end}}{{end}}{{else}}New chat{{end}}</h2>
           </div>
           <div class="header-actions">
@@ -97,7 +97,7 @@
             <article class="message message-{{.Role}} {{if eq .Status "error"}}is-error{{end}}" data-message-id="{{.ID}}">
               <div class="message-avatar">{{if eq .Role "user"}}U{{else}}F{{end}}</div>
               <div class="message-body">
-                <div class="message-meta">{{if eq .Role "user"}}You{{else}}FakeGK{{end}}</div>
+                <div class="message-meta">{{if eq .Role "user"}}You{{else}}FakeGK{{if .Model}} · {{.Model}}{{end}}{{end}}</div>
                 <p>{{if eq .Status "error"}}{{.Error}}{{else}}{{.Content}}{{end}}</p>
               </div>
             </article>

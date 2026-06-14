@@ -27,6 +27,9 @@ type AppConfig struct {
 
 type OpenAIConfig struct {
 	Model                 string
+	FastModel             string
+	DeepModel             string
+	RouterModel           string
 	ContextMessages       int
 	RequestTimeoutSeconds int
 }
@@ -52,6 +55,9 @@ func Load() Config {
 		},
 		OpenAI: OpenAIConfig{
 			Model:                 env("OPENAI_MODEL", "gpt-5.4-mini"),
+			FastModel:             env("OPENAI_FAST_MODEL", env("OPENAI_MODEL", "gpt-5.4-mini")),
+			DeepModel:             env("OPENAI_DEEP_MODEL", "gpt-5.5"),
+			RouterModel:           env("OPENAI_ROUTER_MODEL", env("OPENAI_MODEL", "gpt-5.4-mini")),
 			ContextMessages:       envInt("CHAT_CONTEXT_MESSAGES", 30),
 			RequestTimeoutSeconds: envInt("OPENAI_REQUEST_TIMEOUT_SECONDS", 60),
 		},

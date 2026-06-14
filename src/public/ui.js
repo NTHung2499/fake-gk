@@ -14,6 +14,7 @@
   const keyStatus = document.querySelector("[data-key-status]");
   const renameButton = document.querySelector("[data-rename-session]");
   const deleteButton = document.querySelector("[data-delete-session]");
+  const modelLabel = document.querySelector("[data-model-label]");
 
   let activeSessionId = Number(app.dataset.activeSessionId || 0);
   let isStreaming = false;
@@ -76,7 +77,7 @@
 
     const meta = document.createElement("div");
     meta.className = "message-meta";
-    meta.textContent = message.role === "user" ? "You" : "FakeGK";
+    meta.textContent = metaLabel(message);
 
     const text = document.createElement("p");
     text.textContent = message.status === "error" ? (message.error || "Something went wrong.") : (message.content || "");
@@ -90,6 +91,20 @@
     messageList.append(article);
     scrollToBottom();
     return article;
+  }
+
+  function metaLabel(message) {
+    if (message.role === "user") {
+      return "You";
+    }
+    const parts = ["FakeGK"];
+    if (message.model) {
+      parts.push(message.model);
+    }
+    if (message.route) {
+      parts.push(message.route);
+    }
+    return parts.join(" · ");
   }
 
   function renderSession(session, active = false) {
@@ -203,6 +218,18 @@
       const payload = JSON.parse(event.data);
       streamTarget.textContent += payload.delta || "";
       scrollToBottom();
+    });
+    source.addEventListener("route", (event) => {
+      const payload = JSON.parse(event.data);
+      assistantNode.querySelector(".message-meta").textContent = metaLabel({
+        role: "assistant",
+        model: payload.model,
+        route: payload.route,
+      });
+      assistantNode.title = payload.reason || "";
+      if (modelLabel && payload.model) {
+        modelLabel.textContent = `Auto · using ${payload.model}`;
+      }
     });
     source.addEventListener("done", (event) => {
       const payload = JSON.parse(event.data);
