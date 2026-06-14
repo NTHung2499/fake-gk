@@ -51,7 +51,7 @@ func Load() Config {
 			Secret: appSecret,
 		},
 		OpenAI: OpenAIConfig{
-			Model:                 env("OPENAI_MODEL", "gpt-4o-mini"),
+			Model:                 env("OPENAI_MODEL", "gpt-5.4-mini"),
 			ContextMessages:       envInt("CHAT_CONTEXT_MESSAGES", 30),
 			RequestTimeoutSeconds: envInt("OPENAI_REQUEST_TIMEOUT_SECONDS", 60),
 		},
