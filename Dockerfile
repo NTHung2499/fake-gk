@@ -20,6 +20,6 @@ COPY src/public ./src/public
 COPY web/templates ./web/templates
 
 USER app
-EXPOSE 3000
+EXPOSE 3001
 
 CMD ["./fake-gk"]
